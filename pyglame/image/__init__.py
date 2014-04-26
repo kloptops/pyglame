@@ -148,6 +148,8 @@ from math import ceil
 from StringIO import StringIO
 
 from pyglame.window import *
+from pyglame import draw
+from pyglame.image import atlas
 
 import pygame
 
@@ -298,7 +300,7 @@ class ImageSurface(AbstractImage):
         self._surface = surface
 
     @classmethod
-    def create(cls, width, height, depth=32, pow2=False):
+    def create(cls, width, height, depth=32, rectangle=False):
         '''Create an empty Texture.
 
         If `rectangle` is ``False`` or the appropriate driver extensions are
@@ -321,28 +323,20 @@ class ImageSurface(AbstractImage):
         :since: pyglame 1.1
         '''
 
-        if pow2:
-            width = _nearest_pow2(width)
+        if rectangle:
+            width  = _nearest_pow2(width)
             height = _nearest_pow2(height)
 
         surface = pygame.Surface((width, height), 0, depth)
 
         image = cls(width, height, surface)
-        image._is_pow2 = pow2
+        image._is_rectangle = rectangle
 
     def get_surface(self):
         return self._surface
 
     def blit_into(self, im_surface, x, y, area=None):
-        if im_surface.surface.get_abs_parent() == self.surface.get_abs_parent():
-            surface = self._surface.copy()
-        else:
-            surface = self._surface
-
-        if area:
-            im_surface.surface.blit(surface, (x, y), area.rect)
-        else:
-            im_surface.surface.blit(surface, (x, y))
+        draw.blit_into(self, im_surface, x, y)
 
     def get_region(self, x, y, width, height):
         return ImageRegion(x, y, width, height, self)

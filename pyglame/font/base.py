@@ -137,86 +137,17 @@ def get_grapheme_clusters(text):
         clusters.append(cluster)
     return clusters
 
-class Glyph(image.TextureRegion):
-    '''A single glyph located within a larger texture.
+class Glyph(image.ImageRegion):
+    pass
 
-    Glyphs are drawn most efficiently using the higher level APIs, for example
-    `GlyphString`.
 
-    :Ivariables:
-        `advance` : int
-            The horizontal advance of this glyph, in pixels.
-        `vertices` : (int, int, int, int)
-            The vertices of this glyph, with (0,0) originating at the
-            left-side bearing at the baseline.
-
-    '''
-
-    advance = 0
-    vertices = (0, 0, 0, 0)
-
-    def set_bearings(self, baseline, left_side_bearing, advance):
-        '''Set metrics for this glyph.
-
-        :Parameters:
-            `baseline` : int
-                Distance from the bottom of the glyph to its baseline;
-                typically negative.
-            `left_side_bearing` : int
-                Distance to add to the left edge of the glyph.
-            `advance` : int
-                Distance to move the horizontal advance to the next glyph.
-
-        '''
-        self.advance = advance
-        self.vertices = (
-            left_side_bearing,
-            -baseline,
-            left_side_bearing + self.width,
-            -baseline + self.height)
-
-    def draw(self):
-        '''Debug method.
-
-        Use the higher level APIs for performance and kerning.
-        '''
-        glBindTexture(GL_TEXTURE_2D, self.owner.id)
-        glBegin(GL_QUADS)
-        self.draw_quad_vertices()
-        glEnd()
-
-    def draw_quad_vertices(self):
-        '''Debug method.
-
-        Use the higher level APIs for performance and kerning.
-        '''
-        glTexCoord3f(*self.tex_coords[:3])
-        glVertex2f(self.vertices[0], self.vertices[1])
-        glTexCoord3f(*self.tex_coords[3:6])
-        glVertex2f(self.vertices[2], self.vertices[1])
-        glTexCoord3f(*self.tex_coords[6:9])
-        glVertex2f(self.vertices[2], self.vertices[3])
-        glTexCoord3f(*self.tex_coords[9:12])
-        glVertex2f(self.vertices[0], self.vertices[3])
-
-    def get_kerning_pair(self, right_glyph):
-        '''Not implemented.
-        '''
-        return 0
-
-class GlyphTextureAtlas(image.Texture):
+class GlyphTextureAtlas(image.ImageSurface):
     '''A texture within which glyphs can be drawn.
     '''
     region_class = Glyph
     x = 0
     y = 0
     line_height = 0
-
-    def apply_blend_state(self):
-        '''Set the OpenGL blend state for the glyphs in this texture.
-        '''
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glEnable(GL_BLEND)
 
     def fit(self, image):
         '''Place `image` within this texture.
@@ -233,6 +164,7 @@ class GlyphTextureAtlas(image.Texture):
             self.x = 0
             self.y += self.line_height
             self.line_height = 0
+
         if self.y + image.height > self.height:
             return None
 

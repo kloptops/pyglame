@@ -222,6 +222,7 @@ class _ModuleProxy(object):
 if not _is_epydoc:
     app      = _ModuleProxy('app')
     clock    = _ModuleProxy('clock')
+    draw     = _ModuleProxy('draw')
     event    = _ModuleProxy('event')
     font     = _ModuleProxy('font')
     image    = _ModuleProxy('image')
@@ -233,6 +234,7 @@ if not _is_epydoc:
 if False:
     import app
     import clock
+    import draw
     import event
     import font
     import image
