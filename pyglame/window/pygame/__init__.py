@@ -54,6 +54,7 @@ from pyglame.window import (
     BaseWindow,
     Platform, Display, Screen,
     MouseCursor, DefaultMouseCursor, WindowException)
+from pyglame.event import EventDispatcher
 from pyglame.window import key, mouse
 from pyglame.window.pygame.keys import (
     keymap as _keymap,
@@ -179,6 +180,8 @@ class PygameWindow(BaseWindow):
         self._last_mouse_cursor = None
         self._last_mouse_visible = None
         self.set_mouse_platform_visible()
+        self.dispatch_event('on_resize', self._width, self._height)
+        self.dispatch_event('on_show')
 
     def _create(self):
         size = (self._width, self._height)
@@ -199,15 +202,15 @@ class PygameWindow(BaseWindow):
             self._surface = pygame.display.set_mode(
                 size, pygame.RESIZABLE if self._resizable else 0)
 
+
     def _recreate(self, changes):
         self._create()
-
 
     def switch_to(self):
         pass
 
     def activate(self):
-        pass
+        self.dispatch_event('on_activate')
 
     ## Set size stuff
     def set_size(self, width, height):
@@ -350,7 +353,6 @@ class PygameWindow(BaseWindow):
                         'on_key_press', pyglame_key, pyglame_mod)
 
                 motion_mod = pyglame_mod & ~(key.MOD_SHIFT|key.MOD_NUMLOCK|key.MOD_CAPSLOCK)
-                print key.modifiers_string(pyglame_mod), "vs", key.modifiers_string(motion_mod)
                 if (pyglame_key, motion_mod) in _motion_map:
                     motion_key = _motion_map[(pyglame_key, motion_mod)]
                     if pyglame_mod & key.MOD_SHIFT:
@@ -424,7 +426,7 @@ class PygameWindow(BaseWindow):
                         event.rel[0], event.rel[1])
                 else:
                     buttons = event.buttons[0]|event.buttons[1]<<1|event.buttons[2]<<2
-                    mods = pygame.key.get_mods()
+                    mods = _translate_modifiers(pygame.key.get_mods())
                     self.dispatch_event(
                         'on_mouse_drag',
                         event.pos[0], event.pos[1],
@@ -483,6 +485,6 @@ class PygameWindow(BaseWindow):
 
     def dispatch_pending_events(self):
         while self._event_queue:
-            event = self._event_queue.popleft(0)
+            event = self._event_queue.popleft()
             # pyglame event
             EventDispatcher.dispatch_event(self, *event)

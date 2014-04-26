@@ -115,8 +115,6 @@ def _trace_repr(value, size=60):
     return value
 
 def _trace_frame(frame, indent):
-    from pyglet import lib
-
     code = frame.f_code
     name = code.co_name
     path = code.co_filename
@@ -225,6 +223,8 @@ if not _is_epydoc:
     app      = _ModuleProxy('app')
     clock    = _ModuleProxy('clock')
     event    = _ModuleProxy('event')
+    font     = _ModuleProxy('font')
+    image    = _ModuleProxy('image')
     resource = _ModuleProxy('resource')
     window   = _ModuleProxy('window')
 
@@ -234,6 +234,8 @@ if False:
     import app
     import clock
     import event
+    import font
+    import image
     import resource
     import window
 

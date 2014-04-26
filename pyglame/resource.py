@@ -440,6 +440,6 @@ class _DefaultLoader(Loader):
     path = property(_get_path, _set_path)
 
 _default_loader = _DefaultLoader()
-reindex = _default_loader.reindex
-file = _default_loader.file
-location = _default_loader.location
+reindex         = _default_loader.reindex
+file            = _default_loader.file
+location        = _default_loader.location
