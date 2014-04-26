@@ -1,0 +1,15 @@
+pyglame
+=======
+
+pyglame provides an object-orientated programming interface that closely follows
+pyglet. It runs on top of pygame, giving you access to pyglets excellent
+app/window/clock/resource framework.
+
+
+It is pronounced pig-lame, it is a combination of pyglet and pygame.
+
+
+I cannot stress this enough that it does not support OpenGL at all at the
+moment, and I have little motivation to do so. Unless someone can give me a
+compelling argument, use pyglet if you really need opengl?
+
