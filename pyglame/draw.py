@@ -39,28 +39,29 @@
 # POSSIBILITY OF SUCH DAMAGE.
 # ----------------------------------------------------------------------------
 
-from pyglame import image
+from pyglame import surface
 import pygame
 
 class DrawException(Exception):
     pass
 
-def _surface(im):
-    if isinstance(im, image.AbstractImage):
+def _pygame_get_surface(im):
+    if isinstance(im, surface.AbstractSurface):
         return im.surface
     elif isinstance(im, pygame.Surface):
         return im
     else:
-        raise DrawException('Unable to find suitable surface.')
+        raise DrawException('Unable to find pygame.Surface.')
 
-def _unique_surface(im_a, im_b):
-    surf_a = _surface(im_a)
-    surf_b = _surface(im_b)
-    if surf_a.get_abs_parent() == surf_b.get_abs_parent():
-        return surf_a, surf_b.copy()
-    return surf_a, surf_b
+def _pygame_get_unique_surface(surf_a, surf_b):
+    psurf_a = _pygame_get_surface(surf_a)
+    psurf_b = _pygame_get_surface(surf_b)
+    if psurf_a.get_abs_parent() == psurf_b.get_abs_parent():
+        return psurf_a, psurf_b.copy()
+    return psurf_a, psurf_b
 
-def blit_into(dest_im, source_im, x, y):
-    dest_surf, source_surf = _unique_surface(dest_im, source_im)
+def blit_into(dest, src, x, y, rect=None, special=0):
+    psurf_dest, psurf_src = _pygame_get_unique_surface(dest, src)
 
-    dest_surf.blit(source_surf, (x, y))
+    psurf_dest.blit(
+        psurf_src, (x + src.anchor_x, y + src.anchor_y), rect, special)

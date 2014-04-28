@@ -100,6 +100,7 @@ import sys
 import zipfile
 import StringIO
 
+import pygame
 import pyglame
 
 class ResourceNotFoundException(Exception):
@@ -299,11 +300,11 @@ class Loader(object):
 
         # Map name to image
         # self._cached_textures = weakref.WeakValueDictionary()
-        # self._cached_images = weakref.WeakValueDictionary()
+        self._cached_images = weakref.WeakValueDictionary()
         # self._cached_animations = weakref.WeakValueDictionary()
 
         # Map bin size to list of atlases
-        # self._texture_atlas_bins = {}
+        self._texture_atlas_bins = {}
 
     def reindex(self):
         '''Refresh the file index.
@@ -419,6 +420,85 @@ class Loader(object):
         except KeyError:
             raise ResourceNotFoundException(name)
 
+    def list_all(self):
+        for name in self._index.keys():
+            yield name
+
+    def _alloc_image(self, name, flip_x=False, flip_y=False, rotate=None):
+        file = self.file(name)
+        img = pyglame.surface.load(name, file=file)
+
+        if flip_x or flip_y:
+            img._surface = pygame.transform.flip(img._surface, flip_x, flip_y)
+
+        if rotate != None:
+            img._surface = pygame.transform.rotate(img._surface, rotate)
+
+        img.width  = img._surface.get_width()
+        img.height = img._surface.get_height()
+
+        bin = self._get_texture_atlas_bin(img.width, img.height)
+        if bin is None:
+            return img
+
+        return bin.add(img)
+
+    def _get_texture_atlas_bin(self, width, height):
+        '''A heuristic for determining the atlas bin to use for a given image
+        size.  Returns None if the image should not be placed in an atlas (too
+        big), otherwise the bin (a list of SurfaceAtlas).
+        '''
+        # Large images are not placed in an atlas
+        if width > 128 or height > 128:
+            return None
+
+        # Group images with small height separately to larger height (as the
+        # allocator can't stack within a single row).
+        bin_size = 1
+        if height > 32:
+            bin_size = 2
+
+        try:
+            bin = self._texture_atlas_bins[bin_size]
+        except KeyError:
+            bin = self._texture_atlas_bins[bin_size] = \
+                pyglame.surface.atlas.SurfaceBin(512, 512)
+
+        return bin
+
+    def image(self, name, flip_x=False, flip_y=False, rotate=None):
+        '''Load an image with optional transformation.
+
+        This is similar to `texture`, except the resulting image will be
+        packed into a `SurfaceBin` if it is an appropriate size for packing.
+        This is more efficient than loading images into separate textures.
+
+        :Parameters:
+            `name` : str
+                Filename of the image source to load.
+            `flip_x` : bool
+                If True, the returned image will be flipped horizontally.
+            `flip_y` : bool
+                If True, the returned image will be flipped vertically.
+            `rotate` : float
+                The returned image will be rotated clockwise by the given
+                number of degrees.
+
+        :rtype: `Surface`
+        :return: A complete texture if the image is large, otherwise a
+            `SurfaceRegion` of a texture atlas.
+        '''
+        key = (name, flip_x, flip_y, rotate)
+        if key in self._cached_images:
+            identity = self._cached_images[key]
+        else:
+            identity = self._cached_images[key] = self._alloc_image(name, flip_x, flip_y, rotate)
+
+        return identity
+
+
+
+
 #: Default resource search path.
 #:
 #: Locations in the search path are searched in order and are always
@@ -443,3 +523,5 @@ _default_loader = _DefaultLoader()
 reindex         = _default_loader.reindex
 file            = _default_loader.file
 location        = _default_loader.location
+image           = _default_loader.image
+list_all        = _default_loader.list_all

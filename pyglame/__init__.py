@@ -225,8 +225,8 @@ if not _is_epydoc:
     draw     = _ModuleProxy('draw')
     event    = _ModuleProxy('event')
     font     = _ModuleProxy('font')
-    image    = _ModuleProxy('image')
     resource = _ModuleProxy('resource')
+    surface  = _ModuleProxy('surface')
     window   = _ModuleProxy('window')
 
 # Fool py2exe, py2app into including all top-level modules (doesn't understand
@@ -237,8 +237,8 @@ if False:
     import draw
     import event
     import font
-    import image
     import resource
+    import surface
     import window
 
 # Hack around some epydoc bug that causes it to think pyglet.window is None.
