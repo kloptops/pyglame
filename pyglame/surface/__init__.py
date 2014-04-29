@@ -68,8 +68,6 @@ the memory is shared efficiently)::
 
     subimage = pic.get_region(x, y, width, height)
 
-Remember that y-coordinates are always increasing downwards.
-
 '''
 
 __docformat__ = 'restructuredtext'
@@ -216,8 +214,7 @@ class AbstractSurface(object):
         '''Draw `source` on this image.
 
         `source` will be copied into this image such that its anchor point
-        is aligned with the `x` and `y` parameters.  If this image is a 3D
-        texture, the `z` coordinate gives the image slice to copy into.
+        is aligned with the `x` and `y` parameters.
 
         Note that if `source` is larger than this image (or the positioning
         would cause the copy to go out of bounds) then you must pass a
@@ -286,6 +283,10 @@ class Surface(AbstractSurface):
     def get_region(self, x, y, width, height):
         return SurfaceRegion(x, y, width, height, self)
 
+
+class DisplaySurface(Surface):
+    def get_region(self, x, y, width, height):
+        raise SurfaceException('Unable to create SurfaceRegion from a DisplaySurface.')
 
 class SurfaceRegion(Surface):
     '''A rectangular region of a texture, presented as if it were

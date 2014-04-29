@@ -121,7 +121,7 @@ def _trace_frame(frame, indent):
     line = code.co_firstlineno
 
     if _trace_restrict:
-        if 'pyglame' not in path:
+        if ('/' in path or '\\' in path) and 'pyglame' not in path:
             return
 
     try:
@@ -175,9 +175,9 @@ def _install_trace():
     print "Installing trace"
     sys.setprofile(_trace_func)
 
-_trace_args = options['debug_trace_args']
-_trace_depth = options['debug_trace_depth']
-_trace_flush = options['debug_trace_flush']
+_trace_args     = options['debug_trace_args']
+_trace_depth    = options['debug_trace_depth']
+_trace_flush    = options['debug_trace_flush']
 _trace_restrict = options['debug_trace_restrict']
 if options['debug_trace']:
     _install_trace()

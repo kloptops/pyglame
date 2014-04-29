@@ -49,6 +49,7 @@ import sys
 import unicodedata
 
 import pygame
+import pyglame
 
 from pyglame.window import (
     BaseWindow,
@@ -155,8 +156,6 @@ _cursor_cache = {}
 
 class PygameWindow(BaseWindow):
 
-    _surface      = None
-
     _fullscreen_modes = (
         ## TODO: fullscreen resizeable sort of doesn't really not sort of work.
         pygame.FULLSCREEN|pygame.HWSURFACE|pygame.RESIZABLE|pygame.DOUBLEBUF,
@@ -192,19 +191,31 @@ class PygameWindow(BaseWindow):
             else:
                 raise PygameWindowException("Unable to go fullscreen")
 
-            self._surface = pygame.display.set_mode(
+            surface = pygame.display.set_mode(
                 size, fullscreen_mode)
         else:
             if not pygame.display.mode_ok(
                     size, pygame.RESIZABLE if self._resizable else 0):
                 raise PygameWindowException("Unable to create pygame window")
 
-            self._surface = pygame.display.set_mode(
+            surface = pygame.display.set_mode(
                 size, pygame.RESIZABLE if self._resizable else 0)
 
+        if self._surface:
+            self._surface._surface = surface
+            self._surface.width = self._width
+            self._surface.height = self._height
+        else:
+            self._surface = pyglame.surface.DisplaySurface(
+                self._width, self._height, surface)
 
     def _recreate(self, changes):
         self._create()
+
+        if 'fullscreen' in changes:
+            self.dispatch_event('on_resize', self._width, self._height)
+            self.dispatch_event('on_show')
+
 
     def switch_to(self):
         pass
@@ -218,14 +229,12 @@ class PygameWindow(BaseWindow):
             return
 
         if self._fullscreen == False:
-            print "Before: ", width, height
             if self._minimum_size:
                 width  = max(width, self._minimum_size[0])
                 height = max(height, self._minimum_size[1])
             if self._maximum_size:
                 width  = min(width, self._maximum_size[0])
                 height = min(height, self._maximum_size[1])
-            print "After: ", width, height
 
         self._width = width
         self._height = height
@@ -247,7 +256,7 @@ class PygameWindow(BaseWindow):
 
     ## Drawing stuffs
     def clear(self):
-        self._surface.fill(0)
+        self._surface._surface.fill(0)
 
     def flip(self):
         pygame.display.update()

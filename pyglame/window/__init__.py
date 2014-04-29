@@ -428,33 +428,33 @@ class BaseWindow(EventDispatcher):
     invalid = True
 
     # Instance variables accessible only via properties
-
-    _width = None
-    _height = None
-    _caption = None
-    _resizable = False
+    _surface    = False
+    _width      = None
+    _height     = None
+    _caption    = None
+    _resizable  = False
     _fullscreen = False
-    _visible = False
-    _vsync = False
+    _visible    = False
+    _vsync      = False
 
     # Used to restore window size and position after fullscreen
     _windowed_size = None
 
     # Subclasses should update these after relevant events
-    _mouse_cursor = DefaultMouseCursor()
-    _mouse_x = 0
-    _mouse_y = 0
-    _mouse_visible = True
+    _mouse_cursor    = DefaultMouseCursor()
+    _mouse_x         = 0
+    _mouse_y         = 0
+    _mouse_visible   = True
     _mouse_exclusive = False
     _mouse_in_window = False
-
-    _event_queue = None
-    _enable_event_queue = True    # overridden by EventLoop.
+    
+    _event_queue          = None
+    _enable_event_queue   = True    # overridden by EventLoop.
     _allow_dispatch_event = False # controlled by dispatch_events stack frame
 
     # Class attributes
-
-    _default_width = 640
+    
+    _default_width  = 640
     _default_height = 480
 
     def __init__(
@@ -611,6 +611,7 @@ class BaseWindow(EventDispatcher):
             self._width  = self.screen.width
             self._height = self.screen.height
         else:
+            # Restore windowed size
             self._width, self._height = self._windowed_size
 
         self._recreate(['fullscreen'])
@@ -656,7 +657,7 @@ class BaseWindow(EventDispatcher):
         ``MouseCursor`` and provide your own ``draw`` method.
         '''
         # Draw mouse cursor if set and visible.
-        # XXX leaves state in modelview regardless of starting state
+        # Doesnt currently work :(
         if (self._mouse_cursor.drawable and
                 self._mouse_visible and
                 self._mouse_in_window):
@@ -708,15 +709,12 @@ class BaseWindow(EventDispatcher):
 
         :type: `Screen`
         ''')
-    config = property(lambda self: self._config,
-        doc='''A GL config describing the context of this window.  Read-only.
 
-        :type: `pyglame.gl.Config`
-        ''')
-    context = property(lambda self: self._context,
-        doc='''The OpenGL context attached to this window.  Read-only.
 
-        :type: `pyglame.gl.Context`
+    surface = property(lambda self: self.get_surface(),
+        doc='''a pyglame.surface.DisplaySurface for this window.  Read-only.
+
+        :type: `pyglame.surface.DisplaySurface`
         ''')
 
     # These are the only properties that can be set
@@ -989,6 +987,15 @@ class BaseWindow(EventDispatcher):
 
         '''
         pass
+
+    def get_surface(self):
+        '''Get a pyglame.surface.DisplaySurface for this window.
+
+        :type: `pyglame.surface.DisplaySurface`
+        '''
+        if self._surface == None:
+            raise WindowException('Unable to retrieve DisplaySurface.')
+        return self._surface
 
     def clear(self):
         '''Clear the window.
