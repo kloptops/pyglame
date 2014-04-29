@@ -155,12 +155,8 @@ _pygame_default_mouse = PygameCursor(_cursors['arrow'])
 _cursor_cache = {}
 
 class PygameWindow(BaseWindow):
-
     _fullscreen_modes = (
-        ## TODO: fullscreen resizeable sort of doesn't really not sort of work.
-        pygame.FULLSCREEN|pygame.HWSURFACE|pygame.RESIZABLE|pygame.DOUBLEBUF,
         pygame.FULLSCREEN|pygame.HWSURFACE|pygame.DOUBLEBUF,
-        pygame.FULLSCREEN|pygame.RESIZABLE,
         pygame.FULLSCREEN,
         )
 
@@ -212,8 +208,10 @@ class PygameWindow(BaseWindow):
     def _recreate(self, changes):
         self._create()
 
-        if 'fullscreen' in changes:
+        if 'fullscreen' in changes or 'resize' in changes:
             self.dispatch_event('on_resize', self._width, self._height)
+
+        if 'fullscreen' in changes:
             self.dispatch_event('on_show')
 
 
@@ -239,7 +237,6 @@ class PygameWindow(BaseWindow):
         self._width = width
         self._height = height
         self._recreate(['resize'])
-        self.dispatch_event('on_resize', width, height)
 
     def get_size(self):
         return self._width, self._height
